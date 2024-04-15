@@ -27,30 +27,38 @@ class ProductList extends StatelessWidget {
                 productName: productList[index],
                 isAdded: cartController.cartList.contains(productList[index]),
                 onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text("Add to Cart"),
-                        content: Text("Apakah kamu ingin menambahkan ${productList[index]} kedalam keranjang belanja?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("No"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              cartController.addToCart(productList[index]);
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("Yes"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
+                  final bool isAdded = cartController.cartList.contains(productList[index]);
+                  if (!isAdded) {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text("Add to Cart"),
+                          content: Text("Apakah kamu ingin menambahkan ${productList[index]} kedalam keranjang belanja?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text("No"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                cartController.addToCart(productList[index]);
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text("Yes"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    final snackBar = SnackBar(
+                      content: Text('${productList[index]} Tidak bisa menambahkan produk yang sama kedalam keranjang belanja.'),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  }
                 },
               );
             },
