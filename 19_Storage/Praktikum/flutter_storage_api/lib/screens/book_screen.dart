@@ -14,6 +14,9 @@ class BookScreen extends StatefulWidget {
 }
 
 class _BookScreenState extends State<BookScreen> {
+  TextEditingController titleController = TextEditingController();
+  TextEditingController authorController = TextEditingController();
+  TextEditingController publishYearController = TextEditingController();
   void _logout() async {
     Provider.of<UserController>(context, listen: false).logoutUser();
     await Future.delayed(const Duration(seconds: 1));
@@ -23,26 +26,32 @@ class _BookScreenState extends State<BookScreen> {
   }
 
   void _addBook(context) async {
+    titleController.clear();
+    authorController.clear();
+    publishYearController.clear();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Add Book'),
-          content: const Column(
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                decoration: InputDecoration(
+                controller: titleController,
+                decoration: const InputDecoration(
                   labelText: 'Title',
                 ),
               ),
               TextField(
-                decoration: InputDecoration(
+                controller: authorController,
+                decoration: const InputDecoration(
                   labelText: 'Author',
                 ),
               ),
               TextField(
-                decoration: InputDecoration(
+                controller: publishYearController,
+                decoration: const InputDecoration(
                   labelText: 'Publish Year',
                 ),
               ),
@@ -58,6 +67,18 @@ class _BookScreenState extends State<BookScreen> {
             TextButton(
               onPressed: () {
                 // Tambahkan Fungsi untuk Menyimpan Data
+                final newBookData = {
+                  'title': titleController.text,
+                  'author': authorController.text,
+                  'published_year': publishYearController.text,
+                };
+
+                Provider.of<BookController>(context, listen: false).addBook(newBookData);
+
+                titleController.clear();
+                authorController.clear();
+                publishYearController.clear();
+                Navigator.of(context).pop();
               },
               child: const Text('Save'),
             ),
@@ -112,11 +133,102 @@ class _BookScreenState extends State<BookScreen> {
               itemCount: bookController.books?.length ?? 0,
               itemBuilder: (context, index) {
                 final book = bookController.books?[index];
-                return Card(
-                  child: ListTile(
-                    title: Text(book.title),
-                    subtitle: Text(book.author),
-                    trailing: Text(book.publishedYear),
+                return GestureDetector(
+                  onLongPress: () {
+                    // Alert Dialog untuk Menghapus Data
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Delete Book'),
+                          content: const Text('Are you sure want to delete this book?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // Tambahkan Fungsi untuk Menghapus Data
+                                Provider.of<BookController>(context, listen: false).deleteBook(book.id);
+
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Delete'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  onDoubleTap: () {
+                    // Alert Dialog untuk Update Data
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Update Book'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: titleController..text = book.title,
+                                decoration: const InputDecoration(
+                                  labelText: 'Title',
+                                ),
+                              ),
+                              TextField(
+                                controller: authorController..text = book.author,
+                                decoration: const InputDecoration(
+                                  labelText: 'Author',
+                                ),
+                              ),
+                              TextField(
+                                controller: publishYearController..text = book.publishedYear,
+                                decoration: const InputDecoration(
+                                  labelText: 'Publish Year',
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // Tambahkan Fungsi untuk Update Data
+                                final updatedBookData = {
+                                  'title': titleController.text,
+                                  'author': authorController.text,
+                                  'published_year': publishYearController.text,
+                                };
+
+                                Provider.of<BookController>(context, listen: false).updateBook(book.id, updatedBookData);
+
+                                titleController.clear();
+                                authorController.clear();
+                                publishYearController.clear();
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Update'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Card(
+                    child: ListTile(
+                      title: Text(book.title),
+                      subtitle: Text(book.author),
+                      trailing: Text(book.publishedYear),
+                    ),
                   ),
                 );
               },
